@@ -105,7 +105,7 @@ class TrayIconManager:
                 return True
 
         self.icon = pystray.Icon(
-            "MouseMgr",
+            "CursorHelper",
             self.create_image(),
             "마우스 관리자",
             menu=LazyMenu(self.build_menu)

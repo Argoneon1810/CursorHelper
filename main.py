@@ -101,7 +101,7 @@ def main(debug=False):
 
     logic.register_log_callback(lambda msg: dispatcher.enqueue(backend.LogTask("Logic", msg)))
 
-    log(f"== MouseMgr Started. Debug={DEBUG_MODE} ==")
+    log(f"== CursorHelper Started. Debug={DEBUG_MODE} ==")
     logic.load_custom_aliases()
 
     tray_manager = tray.TrayIconManager(

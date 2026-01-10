@@ -1,6 +1,6 @@
-# MouseMgr
+# CursorHelper
 
-**MouseMgr**는 시스템 트레이에 상주하는 트레이 아이콘을 사용하여 마우스 커서 구성표, 간단히 말해 커서 테마를 간단하고 빠르게 전환하는 것을 목표로 하는 편의성 도구입니다.
+**CursorHelper**는 시스템 트레이에 상주하는 트레이 아이콘을 사용하여 마우스 커서 구성표, 간단히 말해 커서 테마를 간단하고 빠르게 전환하는 것을 목표로 하는 편의성 도구입니다.
 
 ## 주요 기능
 ### 1. 구성표 즉시 전환
@@ -41,8 +41,8 @@
 
 #### **저장소 클론**
 ```bash
-git clone https://github.com/username/MouseMgr.git
-cd MouseMgr
+git clone https://github.com/username/CursorHelper.git
+cd CursorHelper
 ```
 
 #### **가상 환경 생성 및 의존성 설치**
