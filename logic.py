@@ -3,6 +3,7 @@ import csv
 import glob
 import zipfile
 import backend
+import unicodedata
 
 # =============================================================================
 # [Constants & Globals]
@@ -97,21 +98,28 @@ def smart_match_file(filename, role):
 def export_current_to_zip(zip_path):
     log(f">> [export_current_to_zip] Starting export to: {zip_path}")
     current_paths = backend.get_current_cursor_paths()
-    count_ok = 0
-    count_skip = 0
+
 
     try:
+        config_lines = ["[Schemes]", "Name=BackupScheme"]
+        data_parts = []
+        written_filenames = set()
+        count_ok = 0
+        count_skip = 0
         with zipfile.ZipFile(zip_path, 'w') as zf:
-            config_lines = ["[Schemes]\nName=BackupScheme\nData="]
-            data_parts = []
-
             for role in backend.CURSOR_ROLES:
                 original_path = current_paths.get(role, "")
+                filename = ""
 
-                if os.path.exists(original_path):
+                if original_path and os.path.exists(original_path):
                     filename = os.path.basename(original_path)
-                    log(f"      [Archive] {role}: {filename}")
-                    zf.write(original_path, filename)
+                    if filename not in written_filenames:
+                        log(f"      [Archive] {role}: {filename}")
+                        zf.write(original_path, filename)
+                        written_filenames.add(filename)
+                    else:
+                        # log(f"      [Link] {role} -> {filename} (Already archived)")
+                        pass
                     data_parts.append(filename)
                     count_ok += 1
                 else:
@@ -119,8 +127,8 @@ def export_current_to_zip(zip_path):
                     data_parts.append("")
                     count_skip += 1
 
-            config_str = ",".join(data_parts)
-            config_lines.append(config_str)
+            full_data_str = ",".join(data_parts)
+            config_lines.append(f"Data={full_data_str}")
             zf.writestr("scheme.ini", "\n".join(config_lines))
         log(f"   [Done] Export successful. Packed {count_ok} files (Skipped {count_skip}).")
     except Exception as e:
@@ -148,32 +156,16 @@ def import_zip_scheme(zip_path):
         log(f"!! [Error] Unzip failed: {e}")
         return False, str(e)
 
-    ini_path = os.path.join(target_dir, "scheme.ini")
-    scheme_data_list = [""] * len(backend.CURSOR_ROLES)
-
-    if os.path.exists(ini_path):
-        log(f"   [Info] Found scheme.ini. Parsing...")
-        try:
-            with open(ini_path, 'r') as f:
-                content = f.read()
-                for line in content.splitlines():
-                    if line.startswith("Data="):
-                        raw_data = line.replace("Data=", "").strip()
-                        parts = raw_data.split(",")
-                        scheme_data_list = [os.path.join(target_dir, p) if p else "" for p in parts]
-                        log(f"   [Info] Parsed Data from ini (Length: {len(scheme_data_list)})")
-                        break
-        except Exception as e:
-            log(f"!! [Error] Failed to read scheme.ini: {e}")
+    matched_dict = parse_scheme_ini(target_dir)
+    scheme_data_list = []
+    if matched_dict:
+        for role in backend.CURSOR_ROLES:
+            scheme_data_list.append(matched_dict.get(role, ""))
     else:
         log("   [Info] scheme.ini missing. Initiating Smart Match...")
-
-        matched_dict = scan_cursor_files(target_dir)
-
-        for idx, role in enumerate(backend.CURSOR_ROLES):
-            if role in matched_dict:
-                scheme_data_list[idx] = matched_dict[role]
-
+        temp_dict = scan_cursor_files(target_dir)
+        for role in backend.CURSOR_ROLES:
+            scheme_data_list.append(temp_dict.get(role, ""))
         log("   [Info] Smart Match complete.")
 
     full_data_str = ",".join(scheme_data_list)
@@ -188,6 +180,59 @@ def import_zip_scheme(zip_path):
     else:
         log(f"!! [Error] Registration failed: {error_msg}")
         return False, error_msg
+
+def parse_scheme_ini(target_dir):
+    log(f">> [parse_scheme_ini] Checking ini in: {target_dir}")
+    ini_path = os.path.join(target_dir, "scheme.ini")
+    if not os.path.exists(ini_path):
+        return None
+    
+    log(f">> [parse_scheme_ini] Found ini at: {ini_path}")
+    matched_data = {}
+    content = None
+
+    for enc in ['utf-8-sig', 'cp949', 'utf-8']:
+        try:
+            with open(ini_path, 'r', encoding=enc) as f:
+                temp_content = f.read()
+                if "Data=" in temp_content:
+                    content = temp_content
+                    log(f"   [Info] Successfully read scheme.ini using encoding: {enc}")
+                    break
+        except Exception:
+            continue
+    if not content:
+        log("!! [Error] Failed to read scheme.ini with supported encodings.")
+        return None
+
+    try:
+        data_line = None
+        for line in content.splitlines():
+            if line.strip().startswith("Data="):
+                data_line = line
+                break
+
+        if data_line:
+            raw_data = data_line[5:].strip()
+            parts = raw_data.split(",")
+            for i, role in enumerate(backend.CURSOR_ROLES):
+                if i < len(parts):
+                    fname = parts[i].strip()
+                    if fname:
+                        fname = unicodedata.normalize('NFC', fname)
+                        full_path = os.path.join(target_dir, fname)
+                        if os.path.exists(full_path):
+                            matched_data[role] = full_path
+                        else:
+                            pass
+            log(f"   [Info] Parsed {len(matched_data)} roles from scheme.ini")
+            return matched_data
+        else:
+            log("   [Warning] 'Data=' key not found in scheme.ini")
+    except Exception as e:
+        log(f"!! [Error] Failed to parse scheme.ini: {e}")
+
+    return None
 
 def scan_cursor_files(target_dir):
     log(f">> [scan_cursor_files] Root: {target_dir}")

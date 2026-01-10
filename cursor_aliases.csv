@@ -1,0 +1,17 @@
+Arrow, 일반 선택, Normal Select
+Help, 도움말 선택, Help Select
+AppStarting, 백그라운드 작업, Working In Background
+Wait, 사용 중, Busy
+Crosshair, 정밀도 선택, Precision Select
+IBeam, 텍스트 선택, Text Select
+NWPen, 필기, Handwriting
+No, 사용할 수 없음, Unavailable
+SizeNS, 수직 크기 조절, Vertical Resize
+SizeWE, 수평 크기 조절, Horizontal Resize
+SizeNWSE, 대각선 방향 크기 조절 1, Diagonal Resize 1
+SizeNESW, 대각선 방향 크기 조절 2, Diagonal Resize 2
+SizeAll, 이동, Move
+UpArrow, 대체 선택, Alternate Select
+Hand, 연결 선택, Link Select
+Pin, 위치 선택, Location Select
+Person, 사용자 선택, Person Select

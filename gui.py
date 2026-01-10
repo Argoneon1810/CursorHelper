@@ -234,9 +234,14 @@ class SchemeEditor(QMainWindow):
     def apply_directory_mapping(self, folder_path, scheme_name):
         log(f">> [Logic] apply_directory_mapping. Name='{scheme_name}'")
 
-        matched_dict = logic.scan_cursor_files(folder_path)
+        matched_dict = logic.parse_scheme_ini(folder_path)
+        if not matched_dict:
+            log("   [Logic] No valid scheme.ini found. Falling back to heuristic scan.")
+            matched_dict = logic.scan_cursor_files(folder_path)
+        else:
+            log("   [Logic] Applied mapping from scheme.ini.")
+            
         mapped_count = 0
-
         for role, fpath in matched_dict.items():
             self.set_role_file(role, fpath)
             mapped_count += 1
