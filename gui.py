@@ -1,15 +1,16 @@
-import sys
 import os
+import sys
 import zipfile
 import struct
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QFileDialog, QScrollArea, QMessageBox, QGroupBox, QFrame
+    QFileDialog, QScrollArea, QMessageBox, QGroupBox, QFrame,
+    QSplitter, QListWidget, QTextEdit, QAbstractItemView
 )
 
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QTextCursor
 from PySide6.QtCore import Qt
 
 import backend
@@ -393,3 +394,85 @@ def run_zip_import_process(ipc_queue=None, debug_mode=False):
     else:
         log("   [Selection] Cancelled.")
     sys.exit()
+
+# =============================================================================
+# [License Dialog]
+# =============================================================================
+
+class LicenseViewer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("오픈소스 라이선스")
+        self.resize(700, 500)
+        self.setup_ui()
+        self.load_data()
+
+    def setup_ui(self):
+        central = QWidget()
+        self.setCentralWidget(central)
+
+        layout = QVBoxLayout(central)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(5)
+        
+        info_label = QLabel("이 소프트웨어에 사용된 오픈소스 라이선스 고지:")
+        info_label.setStyleSheet("font-weight: bold; margin-bottom: 2px;")
+        layout.addWidget(info_label)
+
+        splitter = QSplitter(Qt.Horizontal)
+        
+        self.list_widget = QListWidget()
+        self.list_widget.setFixedWidth(200)
+        self.list_widget.setAlternatingRowColors(True)
+        self.list_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.list_widget.currentItemChanged.connect(self.on_item_changed)
+        splitter.addWidget(self.list_widget)
+
+        self.text_viewer = QTextEdit()
+        self.text_viewer.setReadOnly(True)
+        self.text_viewer.setFontFamily("Consolas")
+        splitter.addWidget(self.text_viewer)
+
+        layout.addWidget(splitter, 1)
+        
+        btn_close = QPushButton("닫기")
+        btn_close.clicked.connect(self.close)
+        layout.addWidget(btn_close, alignment=Qt.AlignRight)
+
+    def load_data(self):
+        self.license_data = logic.get_license_data()
+        
+        self.list_widget.clear()
+        if not self.license_data:
+            self.text_viewer.setText("라이선스 파일을 찾을 수 없습니다.\n(licenses 폴더를 확인하세요)")
+            return
+
+        sorted_keys = sorted(self.license_data.keys())
+        for name in sorted_keys:
+            self.list_widget.addItem(name)
+        
+        if sorted_keys:
+            self.list_widget.setCurrentRow(0)
+
+    def on_item_changed(self, current, previous):
+        if not current:
+            return
+        filename = current.text()
+        content = self.license_data.get(filename, "")
+        self.text_viewer.setText(content)
+        self.text_viewer.moveCursor(QTextCursor.Start)
+
+def run_license_process(ipc_queue=None, debug_mode=False):
+    global IPC_QUEUE
+    IPC_QUEUE = ipc_queue
+    set_debug(debug_mode)
+    
+    log(">> [Process] License Viewer Process Started.")
+    app = QApplication(sys.argv)
+    
+    window = LicenseViewer()
+    window.show()
+    
+    exit_code = app.exec()
+    log(f">> [Process] License Viewer Terminating (Code: {exit_code})")
+    sys.exit(exit_code)

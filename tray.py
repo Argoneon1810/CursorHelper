@@ -87,6 +87,14 @@ class TrayIconManager:
 
         finally:
             items.append(pystray.Menu.SEPARATOR)
+            items.append(
+                pystray.MenuItem(
+                    "오픈소스 라이선스...",
+                    lambda i, t: MainThreadDispatcher.instance().enqueue(
+                        lambda: self.ui_launcher_callback("license")
+                    )
+                )
+            )
             items.append(pystray.MenuItem("종료 (Exit)", lambda i, t: self.exit_callback(i)))
             return items
 

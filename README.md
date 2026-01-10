@@ -43,7 +43,7 @@
 
 ### 일반 사용자 (실행 파일)
 
-[Releases] 페이지에서 `PyInstaller`로 빌드된 단일 실행 파일(`.exe`)을 다운로드하여 실행합니다. (별도 설치 과정 없음)
+[Releases] 페이지에서 압축파일을 내려받아 압축을 해제하고 `.exe` 파일을 실행하십시오 (별도 설치 과정 없음)
 
 ### 개발자 (소스 코드 실행)
 
@@ -84,3 +84,12 @@ python -m main
 - **설명** - 메인 스레드, GUI 스레드, tray icon 스레드를 분리하는 설계를 통해, 어느 한 프로세스가 hanging되어도 다른 도구까지 모두 freeze되는 상황을 예방코자 함. 목적은 달성되었으나, Python 언어에 대한 이해도 부족으로 `MainThreadDispatcher`라는 불필요한 구현이 도입되었음
 - **리스크 및 리스크 수준** - 없거나 낮음 (이점도 일부 존재하는 설계이긴 하나, 비효율을 동반)
 - **향후 계획** - `MainThreadDispatcher`를 별도 모듈로 분리하여 이 프로젝트에서 제거.
+
+# Open Source License
+This project is licensed under the MIT License.
+
+This software uses the following third-party libraries:
+- PySide6 (LGPL v3) - © The Qt Company Ltd.
+- pystray (LGPL v3) - © Moses Palmér
+- Pillow (MIT-CMU) - © Jeffrey A. Clark (Alex Clark) and contributors
+- six (MIT) - © Benjamin Peterson

@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 import glob
 import zipfile
@@ -260,3 +261,53 @@ def scan_cursor_files(target_dir):
 
     log(f"   [Summary] Successfully matched {len(matched_data)} roles out of {len(backend.CURSOR_ROLES)}.")
     return matched_data
+
+# =============================================================================
+# [License Dialog]
+# =============================================================================
+
+def get_license_data():
+    log(">> [License] Loading license files...")
+    data = {}
+
+    if getattr(sys, 'frozen', False): # frozen if pyinstaller
+        if hasattr(sys, '_MEIPASS'): # onefile
+            base_path = sys._MEIPASS
+            license_dir = os.path.join(base_path, "licenses")
+        else: # onedir
+            exe_dir = os.path.dirname(sys.executable)
+            # pyinstaller version diff support
+            internal_path = os.path.join(exe_dir, "_internal", "licenses")
+            root_path = os.path.join(exe_dir, "licenses")
+            if os.path.exists(internal_path):
+                license_dir = internal_path
+            else:
+                license_dir = root_path
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        license_dir = os.path.join(base_dir, "licenses")
+    
+    log(f"   [License] Target directory: {license_dir}")
+
+    if not os.path.exists(license_dir):
+        log("   [Warning] 'licenses' directory not found.")
+        return data
+    
+    try:
+        pattern = os.path.join(license_dir, "*.txt")
+        files = glob.glob(pattern)
+        
+        for fpath in files:
+            fname = os.path.basename(fpath)
+            try:
+                with open(fpath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                data[fname] = content
+            except Exception as e:
+                log(f"!! [Error] Failed to read {fname}: {e}")
+
+        log(f"   [License] Loaded {len(data)} license files.")
+    except Exception as e:
+        log(f"!! [Error] License scan failed: {e}")
+
+    return data

@@ -53,6 +53,9 @@ def handle_ui_request(request_type):
     elif request_type == "import_zip":
         target_func = gui.run_zip_import_process
         args = (_IPC_QUEUE, DEBUG_MODE)
+    elif request_type == "license":
+        target_func = gui.run_license_process
+        args = (_IPC_QUEUE, DEBUG_MODE)
     else:
         log(f"!! [Error] Unknown UI request type: {request_type}")
         return
