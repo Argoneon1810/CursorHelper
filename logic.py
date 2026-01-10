@@ -46,6 +46,7 @@ def load_custom_aliases():
         count = 0
         with open(ALIAS_FILE, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
+            next(reader, None) # 첫째 행은 헤더 행
             for row in reader:
                 if not row: continue
                 role_key = row[0].strip()
