@@ -55,15 +55,18 @@ git clone https://github.com/username/CursorHelper.git
 cd CursorHelper
 ```
 
-#### **가상 환경 생성 및 의존성 설치**
+#### **실행 (uv 사용, 권장)**
+[uv](https://docs.astral.sh/uv/)가 설치되어 있다면 별도의 가상 환경 생성이나 의존성 설치 없이 바로 실행할 수 있습니다.
+의존성은 `pyproject.toml`에 정의되어 있으며, 최초 실행 시 `.venv`가 자동으로 생성됩니다.
+```bash
+uv run main
+```
+
+#### **실행 (pip 사용)**
 ```bash
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-#### **실행**
-```bash
 python -m main
 ```
 

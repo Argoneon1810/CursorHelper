@@ -1,0 +1,23 @@
+[project]
+name = "cursorhelper"
+version = "0.1.0"
+description = "시스템 트레이에서 마우스 커서 구성표를 빠르게 전환하는 편의성 도구"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "pillow==12.1.0",
+    "pyside6==6.10.1",
+    "pystray==0.19.5",
+    "six==1.17.0",
+]
+
+[project.scripts]
+main = "main:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main", "backend", "dispatcher", "gui", "logic", "tray"]
